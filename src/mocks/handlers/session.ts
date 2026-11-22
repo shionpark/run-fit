@@ -152,16 +152,11 @@ export function createSessionHandlers(p: PathFn, authMode: AuthMode) {
             new Date(a.sessionAt).getTime() - new Date(b.sessionAt).getTime()
         );
       } else if (sort === 'registerByAsc') {
-        // 마감 임박순: 모집 중인 세션을 마감이 가까운 순으로, 마감된 세션은 그 뒤에 최근 마감 순으로
-        const deadline = (x: (typeof filteredSessions)[number]) =>
-          new Date(x.registerBy).getTime();
-        filteredSessions.sort((a, b) => {
-          const aClosed = isClosed(a);
-          if (aClosed !== isClosed(b)) return aClosed ? 1 : -1;
-          return aClosed
-            ? deadline(b) - deadline(a)
-            : deadline(a) - deadline(b);
-        });
+        // 마감 임박순 (registerBy 오름차순)
+        filteredSessions.sort(
+          (a, b) =>
+            new Date(a.registerBy).getTime() - new Date(b.registerBy).getTime()
+        );
       }
 
       // 무한스크롤
