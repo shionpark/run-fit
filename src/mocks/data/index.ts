@@ -45,6 +45,7 @@ const _crewSchema = z.object({
   description: z.string().nullable().optional(),
   city: z.string().nullable().optional(),
   image: z.string().nullable().optional(),
+  memberCount: z.number().int(),
   ...baseSchema,
 });
 
@@ -175,6 +176,7 @@ export const crews: Crew[] = Array.from({ length: 95 }, (_, i) => ({
   description: faker.helpers.arrayElement(CREW_DESCRIPTIONS),
   city: faker.helpers.arrayElement(SIDO_LIST),
   image: faker.helpers.arrayElement(DEMO_IMAGES),
+  memberCount: faker.number.int({ min: 5, max: 30 }),
   createdAt: faker.date.past().toISOString(),
   updatedAt: new Date().toISOString(),
 }));

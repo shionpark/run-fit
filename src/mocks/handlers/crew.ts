@@ -1,13 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { requireAuth, type AuthMode } from '../core/auth';
 import type { PathFn } from '../core/path';
-import { crews, faker } from '../data';
-import {
-  CREW_DESCRIPTIONS,
-  CREW_NAMES,
-  DEMO_IMAGES,
-  USER_INTRODUCTIONS,
-} from '../data/demoText';
+import { crews, faker, users } from '../data';
 import { parseIdParam, successResponse } from '../utils';
 
 interface CreateCrewRequest {
@@ -16,6 +10,26 @@ interface CreateCrewRequest {
   city: string;
   image?: string | null;
 }
+
+const findCrew = (id: unknown) => crews.find((c) => c.id === Number(id));
+
+// 크루마다 같은 멤버가 나오도록 crew.id 기준으로 users에서 차례로 고른다.
+const crewMembers = (crew: {
+  id: number;
+  memberCount: number;
+  createdAt: string;
+}) =>
+  Array.from({ length: crew.memberCount }, (_, i) => {
+    const user = users[(crew.id + i) % users.length];
+    return {
+      userId: user.id,
+      name: user.name,
+      profileImage: user.image ?? null,
+      role: i === 0 ? 'LEADER' : i < 3 ? 'STAFF' : 'MEMBER',
+      introduction: user.introduction ?? null,
+      joinedAt: crew.createdAt,
+    };
+  });
 
 export function createCrewHandlers(p: PathFn, authMode: AuthMode) {
   return [
@@ -98,7 +112,7 @@ export function createCrewHandlers(p: PathFn, authMode: AuthMode) {
           description: crew.description,
           city: crew.city,
           image: crew.image,
-          memberCount: faker.number.int({ min: 2, max: 100 }),
+          memberCount: crew.memberCount,
           createdAt: crew.createdAt,
         };
       });
@@ -113,125 +127,45 @@ export function createCrewHandlers(p: PathFn, authMode: AuthMode) {
 
     // 크루 상세 조회
     http.get(p('/api/crews/:id'), ({ params }) => {
-      const id = parseIdParam(params.id);
+      const crew = findCrew(params.id);
+      if (!crew) return HttpResponse.json(null, { status: 404 });
 
+      const { id, name, description, city, image, memberCount, createdAt } =
+        crew;
       const data = {
-        id: id,
-        name: faker.helpers.arrayElement(CREW_NAMES),
-        description: faker.helpers.arrayElement(CREW_DESCRIPTIONS),
-        city: '서울',
-        image: faker.helpers.arrayElement(DEMO_IMAGES),
-        memberCount: faker.number.int({ min: 2, max: 100 }),
-        createdAt: new Date().toISOString(),
+        id,
+        name,
+        description,
+        city,
+        image,
+        memberCount,
+        createdAt,
       };
 
       return HttpResponse.json(successResponse(data), { status: 200 });
     }),
 
     // 크루 멤버 목록 조회
-    http.get(p('/api/crews/:id/members'), () => {
-      const data = {
-        members: [
-          {
-            userId: 1,
-            name: '일멤버',
-            profileImage: faker.image.avatar(),
-            role: 'LEADER',
-            introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
-            joinedAt: '2025-11-20T12:00:00+09:00',
-          },
-          {
-            userId: 2,
-            name: '이멤버',
-            profileImage: faker.image.avatar(),
-            role: 'STAFF',
-            introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
-
-            joinedAt: '2025-11-20T12:00:00+09:00',
-          },
-          {
-            userId: 3,
-            name: '삼멤버',
-            profileImage: faker.image.avatar(),
-            role: 'MEMBER',
-            introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
-            joinedAt: '2025-11-20T12:00:00+09:00',
-          },
-          {
-            userId: 4,
-            name: '사멤버',
-            profileImage: faker.image.avatar(),
-            role: 'STAFF',
-            introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
-            joinedAt: '2025-11-20T12:00:00+09:00',
-          },
-          {
-            userId: 5,
-            name: '오멤버',
-            profileImage: faker.image.avatar(),
-            role: 'MEMBER',
-            introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
-            joinedAt: '2025-11-20T12:00:00+09:00',
-          },
-          {
-            userId: 6,
-            name: '육멤버',
-            profileImage: faker.image.avatar(),
-            role: 'MEMBER',
-            introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
-            joinedAt: '2025-11-20T12:00:00+09:00',
-          },
-          {
-            userId: 7,
-            name: '칠멤버',
-            profileImage: faker.image.avatar(),
-            role: 'STAFF',
-            introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
-
-            joinedAt: '2025-11-20T12:00:00+09:00',
-          },
-          {
-            userId: 8,
-            name: '팔멤버',
-            profileImage: faker.image.avatar(),
-            role: 'MEMBER',
-            introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
-            joinedAt: '2025-11-20T12:00:00+09:00',
-          },
-          {
-            userId: 9,
-            name: '구멤버',
-            profileImage: faker.image.avatar(),
-            role: 'MEMBER',
-            introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
-            joinedAt: '2025-11-20T12:00:00+09:00',
-          },
-          {
-            userId: 10,
-            name: '십멤버',
-            profileImage: faker.image.avatar(),
-            role: 'MEMBER',
-            introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
-            joinedAt: '2025-11-20T12:00:00+09:00',
-          },
-        ],
-      };
+    http.get(p('/api/crews/:id/members'), ({ params }) => {
+      const crew = findCrew(params.id);
+      const data = { members: crew ? crewMembers(crew) : [] };
 
       return HttpResponse.json(successResponse(data), { status: 200 });
     }),
 
     // 크루 멤버 역할별 카운트 조회
-    http.get(p('/api/crews/:id/members/count'), () => {
+    http.get(p('/api/crews/:id/members/count'), ({ params }) => {
+      const crew = findCrew(params.id);
+      const members = crew ? crewMembers(crew) : [];
       const data = {
-        leaderCount: 1,
-        staffCount: 3,
-        memberCount: 24,
+        leaderCount: members.filter((m) => m.role === 'LEADER').length,
+        staffCount: members.filter((m) => m.role === 'STAFF').length,
+        memberCount: members.filter((m) => m.role === 'MEMBER').length,
       };
 
       return HttpResponse.json(successResponse(data), { status: 200 });
     }),
 
-    // 크루 내 특정 사용자 역할 조회
     http.get(p('/api/crews/:crewId/members/:userId/role'), ({ params }) => {
       const userId = parseIdParam(params.userId);
 
