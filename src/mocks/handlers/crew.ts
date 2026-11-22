@@ -2,6 +2,12 @@ import { http, HttpResponse } from 'msw';
 import { requireAuth, type AuthMode } from '../core/auth';
 import type { PathFn } from '../core/path';
 import { crews, faker } from '../data';
+import {
+  CREW_DESCRIPTIONS,
+  CREW_NAMES,
+  DEMO_IMAGES,
+  USER_INTRODUCTIONS,
+} from '../data/demoText';
 import { parseIdParam, successResponse } from '../utils';
 
 interface CreateCrewRequest {
@@ -111,10 +117,10 @@ export function createCrewHandlers(p: PathFn, authMode: AuthMode) {
 
       const data = {
         id: id,
-        name: faker.company.name() + ' 러닝 크루',
-        description: faker.lorem.paragraph(),
+        name: faker.helpers.arrayElement(CREW_NAMES),
+        description: faker.helpers.arrayElement(CREW_DESCRIPTIONS),
         city: '서울',
-        image: faker.image.avatar(),
+        image: faker.helpers.arrayElement(DEMO_IMAGES),
         memberCount: faker.number.int({ min: 2, max: 100 }),
         createdAt: new Date().toISOString(),
       };
@@ -131,7 +137,7 @@ export function createCrewHandlers(p: PathFn, authMode: AuthMode) {
             name: '일멤버',
             profileImage: faker.image.avatar(),
             role: 'LEADER',
-            introduction: faker.lorem.sentence(),
+            introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
             joinedAt: '2025-11-20T12:00:00+09:00',
           },
           {
@@ -139,7 +145,7 @@ export function createCrewHandlers(p: PathFn, authMode: AuthMode) {
             name: '이멤버',
             profileImage: faker.image.avatar(),
             role: 'STAFF',
-            introduction: faker.lorem.sentence(),
+            introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
 
             joinedAt: '2025-11-20T12:00:00+09:00',
           },
@@ -148,7 +154,7 @@ export function createCrewHandlers(p: PathFn, authMode: AuthMode) {
             name: '삼멤버',
             profileImage: faker.image.avatar(),
             role: 'MEMBER',
-            introduction: faker.lorem.sentence(),
+            introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
             joinedAt: '2025-11-20T12:00:00+09:00',
           },
           {
@@ -156,7 +162,7 @@ export function createCrewHandlers(p: PathFn, authMode: AuthMode) {
             name: '사멤버',
             profileImage: faker.image.avatar(),
             role: 'STAFF',
-            introduction: faker.lorem.sentence(),
+            introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
             joinedAt: '2025-11-20T12:00:00+09:00',
           },
           {
@@ -164,7 +170,7 @@ export function createCrewHandlers(p: PathFn, authMode: AuthMode) {
             name: '오멤버',
             profileImage: faker.image.avatar(),
             role: 'MEMBER',
-            introduction: faker.lorem.sentence(),
+            introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
             joinedAt: '2025-11-20T12:00:00+09:00',
           },
           {
@@ -172,7 +178,7 @@ export function createCrewHandlers(p: PathFn, authMode: AuthMode) {
             name: '육멤버',
             profileImage: faker.image.avatar(),
             role: 'MEMBER',
-            introduction: faker.lorem.sentence(),
+            introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
             joinedAt: '2025-11-20T12:00:00+09:00',
           },
           {
@@ -180,7 +186,7 @@ export function createCrewHandlers(p: PathFn, authMode: AuthMode) {
             name: '칠멤버',
             profileImage: faker.image.avatar(),
             role: 'STAFF',
-            introduction: faker.lorem.sentence(),
+            introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
 
             joinedAt: '2025-11-20T12:00:00+09:00',
           },
@@ -189,7 +195,7 @@ export function createCrewHandlers(p: PathFn, authMode: AuthMode) {
             name: '팔멤버',
             profileImage: faker.image.avatar(),
             role: 'MEMBER',
-            introduction: faker.lorem.sentence(),
+            introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
             joinedAt: '2025-11-20T12:00:00+09:00',
           },
           {
@@ -197,7 +203,7 @@ export function createCrewHandlers(p: PathFn, authMode: AuthMode) {
             name: '구멤버',
             profileImage: faker.image.avatar(),
             role: 'MEMBER',
-            introduction: faker.lorem.sentence(),
+            introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
             joinedAt: '2025-11-20T12:00:00+09:00',
           },
           {
@@ -205,7 +211,7 @@ export function createCrewHandlers(p: PathFn, authMode: AuthMode) {
             name: '십멤버',
             profileImage: faker.image.avatar(),
             role: 'MEMBER',
-            introduction: faker.lorem.sentence(),
+            introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
             joinedAt: '2025-11-20T12:00:00+09:00',
           },
         ],

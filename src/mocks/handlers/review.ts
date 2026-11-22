@@ -2,6 +2,7 @@ import { http, HttpResponse } from 'msw';
 import { AuthMode, requireAuth } from '../core/auth';
 import type { PathFn } from '../core/path';
 import { faker, reviews, sessions } from '../data';
+import { REVIEW_TEXTS } from '../data/demoText';
 import { parseIdParam, successResponse } from '../utils';
 
 export function createReviewHandlers(p: PathFn, authMode: AuthMode) {
@@ -70,7 +71,7 @@ export function createReviewHandlers(p: PathFn, authMode: AuthMode) {
           userId: 0,
           userName: faker.person.lastName(),
           userImage: faker.image.avatar(),
-          description: faker.lorem.paragraph(),
+          description: faker.helpers.arrayElement(REVIEW_TEXTS),
           ranks: reqBody.ranks || 4,
           image: reqBody.image || 'string',
           createdAt: new Date().toISOString(),

@@ -6,6 +6,12 @@ import {
 import { AuthMode, requireAuth } from '../core/auth';
 import { type PathFn } from '../core/path';
 import { faker, sessions } from '../data';
+import {
+  DEMO_IMAGES,
+  SESSION_DESCRIPTIONS,
+  SESSION_NAMES,
+  USER_INTRODUCTIONS,
+} from '../data/demoText';
 import { parseIdParam, successResponse } from '../utils';
 
 export function createSessionHandlers(p: PathFn, authMode: AuthMode) {
@@ -188,9 +194,9 @@ export function createSessionHandlers(p: PathFn, authMode: AuthMode) {
         id: sessionId,
         crewId: 1,
         hostUserId: 1,
-        name: faker.lorem.words(3),
-        description: faker.lorem.sentence(),
-        image: faker.image.urlPicsumPhotos(),
+        name: faker.helpers.arrayElement(SESSION_NAMES),
+        description: faker.helpers.arrayElement(SESSION_DESCRIPTIONS),
+        image: faker.helpers.arrayElement(DEMO_IMAGES),
         city: '서울',
         district: '영등포구',
         location: '서울특별시 영등포구 여의동로 330',
@@ -273,7 +279,7 @@ export function createSessionHandlers(p: PathFn, authMode: AuthMode) {
               name: faker.person.fullName(),
               profileImage: faker.image.avatar(),
               role: 'LEADER',
-              introduction: faker.lorem.sentence(),
+              introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
               joinedAt: '2025-12-11T02:49:35.793Z',
             },
             {
@@ -281,7 +287,7 @@ export function createSessionHandlers(p: PathFn, authMode: AuthMode) {
               name: faker.person.fullName(),
               profileImage: faker.image.avatar(),
               role: 'STAFF',
-              introduction: faker.lorem.sentence(),
+              introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
               joinedAt: '2025-12-12T02:49:35.793Z',
             },
             {
@@ -289,7 +295,7 @@ export function createSessionHandlers(p: PathFn, authMode: AuthMode) {
               name: faker.person.fullName(),
               profileImage: faker.image.avatar(),
               role: 'MEMBER',
-              introduction: faker.lorem.sentence(),
+              introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
               joinedAt: '2025-12-13T02:49:35.793Z',
             },
           ],
@@ -312,7 +318,7 @@ export function createSessionHandlers(p: PathFn, authMode: AuthMode) {
           hostUserId: 0,
           name: name,
           description: description,
-          image: image || faker.image.urlPicsumPhotos(),
+          image: image || faker.helpers.arrayElement(DEMO_IMAGES),
           city: '서울',
           district: '영등포구',
           location: '서울특별시 영등포구 여의동로 330',

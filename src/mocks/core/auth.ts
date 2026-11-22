@@ -9,8 +9,13 @@ export function setAuth() {
   sessions.set('userId', 2);
 }
 
+// 새로고침하면 메모리 상태가 사라지므로, 로그인 때 심은 쿠키로도 판단한다.
 export function isAuthed() {
-  return sessions.has('userId');
+  return (
+    sessions.has('userId') ||
+    (typeof document !== 'undefined' &&
+      /(?:^|; )refreshToken=[^;]+/.test(document.cookie))
+  );
 }
 
 export function unauthorized() {

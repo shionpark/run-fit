@@ -2,7 +2,14 @@ import { http, HttpResponse } from 'msw';
 import { UpdateMyProfileRequestBody } from '@/api/fetch/user';
 import { AuthMode, requireAuth } from '../core/auth';
 import { type PathFn } from '../core/path';
-import { faker, users } from '../data';
+import { faker, runTime, users } from '../data';
+import {
+  CREW_NAMES,
+  DEMO_IMAGES,
+  SESSION_DESCRIPTIONS,
+  SESSION_NAMES,
+  USER_INTRODUCTIONS,
+} from '../data/demoText';
 import { parseIdParam, successResponse } from '../utils';
 
 // SliceData 구조 생성
@@ -74,9 +81,9 @@ const generateMockSession = (id: number) => {
     crewId: faker.number.int({ min: 1, max: 50 }),
     hostUserId: faker.number.int({ min: 1, max: 100 }),
 
-    name: faker.lorem.words(3),
-    description: faker.lorem.paragraph(),
-    image: faker.image.urlPicsumPhotos(),
+    name: faker.helpers.arrayElement(SESSION_NAMES),
+    description: faker.helpers.arrayElement(SESSION_DESCRIPTIONS),
+    image: faker.helpers.arrayElement(DEMO_IMAGES),
 
     city: sido,
     district,
@@ -87,15 +94,15 @@ const generateMockSession = (id: number) => {
       lng: Number(faker.location.longitude()),
     },
 
-    sessionAt: faker.date.future().toISOString(),
+    sessionAt: runTime(faker.date.soon({ days: 14 })).toISOString(),
     registerBy: faker.date.soon().toISOString(),
 
-    level: faker.helpers.arrayElement(['초급', '중급', '고급']),
+    level: faker.helpers.arrayElement(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']),
     status: faker.helpers.arrayElement(['OPEN', 'CLOSED', 'COMPLETED']),
     pace: faker.number.int({ min: 300, max: 600 }),
 
     maxParticipantCount: faker.number.int({ min: 10, max: 30 }),
-    currentParticipantCount: faker.number.int({ min: 1, max: 30 }),
+    currentParticipantCount: faker.number.int({ min: 1, max: 10 }),
 
     createdAt: faker.date.past().toISOString(),
 
@@ -116,10 +123,10 @@ const generateMockSession = (id: number) => {
 // 크루 mock
 const generateMockCrew = (id: number) => ({
   id,
-  name: faker.company.name(),
-  region: faker.helpers.arrayElement(['서울', '부산', '대구']),
+  name: faker.helpers.arrayElement(CREW_NAMES),
+  city: faker.helpers.arrayElement(['서울', '부산', '대구']),
   memberCount: faker.number.int({ min: 10, max: 200 }),
-  image: faker.image.avatar(),
+  image: faker.helpers.arrayElement(DEMO_IMAGES),
 });
 
 export function createUserHandlers(p: PathFn, authMode: AuthMode) {
@@ -174,7 +181,7 @@ export function createUserHandlers(p: PathFn, authMode: AuthMode) {
 
     // 특정 유저 정보 조회
     http.get(
-      p('/api/users/:id'),
+      p('/api/user/:id'),
       requireAuth(authMode, ({ params }) => {
         const userId = parseIdParam(params.id);
 
@@ -182,7 +189,7 @@ export function createUserHandlers(p: PathFn, authMode: AuthMode) {
           id: userId,
           name: faker.person.fullName(),
           image: faker.image.avatar(),
-          introduction: faker.lorem.sentence(),
+          introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
           city: '서울',
           pace: 400,
           styles: ['조깅', '러닝크루'],
@@ -190,6 +197,23 @@ export function createUserHandlers(p: PathFn, authMode: AuthMode) {
         };
 
         return HttpResponse.json(successResponse(data), { status: 200 });
+      })
+    ),
+
+    // 내가 만든 크루
+    http.get(
+      p('/api/user/me/crews/owned'),
+      requireAuth(authMode, async ({ request }) => {
+        const url = new URL(request.url);
+        return HttpResponse.json(
+          successResponse(
+            createSliceData(
+              myCrews.slice(0, 2),
+              Number(url.searchParams.get('page') ?? 0),
+              Number(url.searchParams.get('size') ?? 10)
+            )
+          )
+        );
       })
     ),
 

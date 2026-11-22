@@ -1,6 +1,15 @@
 import { base, en, Faker, ko } from '@faker-js/faker';
 import z from 'zod';
 import { SIDO_LIST, SIGUNGU_MAP } from '@/types/region';
+import {
+  CREW_DESCRIPTIONS,
+  CREW_NAMES,
+  DEMO_IMAGES,
+  REVIEW_TEXTS,
+  SESSION_DESCRIPTIONS,
+  SESSION_NAMES,
+  USER_INTRODUCTIONS,
+} from './demoText';
 
 const SEED_NUMBER = 1234;
 
@@ -112,10 +121,10 @@ const mockUser1 = {
 
 const mockUser2 = {
   id: 2,
-  name: '관리자2',
+  name: '김러너',
   email: 'admin2@example.com',
   image: faker.image.avatar(),
-  introduction: faker.lorem.sentence(),
+  introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
   city: faker.helpers.arrayElement(SIDO_LIST),
   pace: faker.number.int({ min: 300, max: 480 }),
   styles: faker.helpers.arrayElements(
@@ -135,7 +144,7 @@ export const users: User[] = [
     name: faker.person.fullName(),
     email: `user${i + 3}@example.com`,
     image: faker.image.avatar(),
-    introduction: faker.lorem.sentence(),
+    introduction: faker.helpers.arrayElement(USER_INTRODUCTIONS),
     city: faker.helpers.arrayElement(SIDO_LIST),
     pace: faker.number.int({ min: 300, max: 480 }),
     styles: faker.helpers.arrayElements(
@@ -148,12 +157,24 @@ export const users: User[] = [
 ];
 
 type Crew = z.infer<typeof _crewSchema>;
+const crewNames = faker.helpers.shuffle(CREW_NAMES);
+
+export const runTime = (d: Date) => {
+  d.setHours(
+    faker.helpers.arrayElement([6, 7, 9, 19, 20]),
+    faker.helpers.arrayElement([0, 30]),
+    0,
+    0
+  );
+  return d;
+};
+
 export const crews: Crew[] = Array.from({ length: 95 }, (_, i) => ({
   id: i + 1,
-  name: `${faker.company.name()}`,
-  description: faker.lorem.paragraph(),
+  name: crewNames[i],
+  description: faker.helpers.arrayElement(CREW_DESCRIPTIONS),
   city: faker.helpers.arrayElement(SIDO_LIST),
-  image: faker.image.urlPicsumPhotos({ width: 640, height: 480 }),
+  image: faker.helpers.arrayElement(DEMO_IMAGES),
   createdAt: faker.date.past().toISOString(),
   updatedAt: new Date().toISOString(),
 }));
@@ -167,7 +188,7 @@ export const sessions: Session[] = [
     const district = faker.helpers.arrayElement(districts);
     const status = 'OPEN' as const;
 
-    const sessionAt = faker.date.soon({ days: 10 });
+    const sessionAt = runTime(faker.date.soon({ days: 10 }));
     const registerBy = faker.date.soon({ days: 5, refDate: new Date() });
 
     // Ensure registerBy is always earlier than sessionAt
@@ -180,9 +201,9 @@ export const sessions: Session[] = [
       id: i + 1,
       crewId: faker.number.int({ min: 1, max: crews.length }),
       hostUserId: faker.number.int({ min: 1, max: users.length }),
-      name: faker.lorem.words(3),
-      description: faker.lorem.sentence(),
-      image: faker.image.urlPicsumPhotos({ width: 640, height: 480 }),
+      name: faker.helpers.arrayElement(SESSION_NAMES),
+      description: faker.helpers.arrayElement(SESSION_DESCRIPTIONS),
+      image: faker.helpers.arrayElement(DEMO_IMAGES),
       city: city,
       district: district,
       location: faker.location.streetAddress(),
@@ -210,16 +231,16 @@ export const sessions: Session[] = [
     const district = faker.helpers.arrayElement(districts);
     const status = 'CLOSED' as const;
 
-    const sessionAt = faker.date.soon();
+    const sessionAt = runTime(faker.date.soon());
     const registerBy = faker.date.recent();
 
     return {
       id: i + 101,
       crewId: faker.number.int({ min: 1, max: crews.length }),
       hostUserId: faker.number.int({ min: 1, max: users.length }),
-      name: faker.lorem.words(3),
-      description: faker.lorem.sentence(),
-      image: faker.image.urlPicsumPhotos({ width: 640, height: 480 }),
+      name: faker.helpers.arrayElement(SESSION_NAMES),
+      description: faker.helpers.arrayElement(SESSION_DESCRIPTIONS),
+      image: faker.helpers.arrayElement(DEMO_IMAGES),
       city: city,
       district: district,
       location: faker.location.streetAddress(),
@@ -247,7 +268,7 @@ export const sessions: Session[] = [
     const district = faker.helpers.arrayElement(districts);
     const status = 'CLOSED' as const;
 
-    const sessionAt = faker.date.recent();
+    const sessionAt = runTime(faker.date.recent());
     const registerBy = faker.date.recent();
 
     // Ensure registerBy is always earlier than sessionAt
@@ -260,9 +281,9 @@ export const sessions: Session[] = [
       id: i + 201,
       crewId: faker.number.int({ min: 1, max: crews.length }),
       hostUserId: faker.number.int({ min: 1, max: users.length }),
-      name: faker.lorem.words(3),
-      description: faker.lorem.sentence(),
-      image: faker.image.urlPicsumPhotos({ width: 640, height: 480 }),
+      name: faker.helpers.arrayElement(SESSION_NAMES),
+      description: faker.helpers.arrayElement(SESSION_DESCRIPTIONS),
+      image: faker.helpers.arrayElement(DEMO_IMAGES),
       city: city,
       district: district,
       location: faker.location.streetAddress(),
@@ -290,11 +311,9 @@ export const reviews: Review[] = Array.from({ length: 30 }, (_, i) => ({
   id: i + 1,
   sessionId: faker.number.int({ min: 1, max: sessions.length }),
   userId: faker.number.int({ min: 1, max: users.length }),
-  description: faker.lorem.paragraph(),
+  description: faker.helpers.arrayElement(REVIEW_TEXTS),
   ranks: faker.number.int({ min: 1, max: 5 }),
-  image: faker.datatype.boolean()
-    ? faker.image.urlPicsumPhotos({ width: 640, height: 480 })
-    : null,
+  image: null,
   createdAt: faker.date.past().toISOString(),
 }));
 

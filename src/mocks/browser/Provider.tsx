@@ -12,9 +12,7 @@ export default function MockProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const shouldMock =
-    process.env.NODE_ENV === 'development' &&
-    process.env.NEXT_PUBLIC_USE_MSW === 'true';
+  const shouldMock = process.env.NEXT_PUBLIC_USE_MSW === 'true';
 
   const [ready, setReady] = useState(!shouldMock);
 
@@ -45,5 +43,15 @@ export default function MockProvider({
 
   if (!ready) return null;
 
-  return <>{children}</>;
+  return (
+    <>
+      {shouldMock && (
+        <p className="bg-gray-800 py-1.5 text-center text-xs text-gray-200">
+          백엔드 서버 운영이 끝나 목 데이터(MSW)로 동작하는 데모입니다. 아무
+          이메일·비밀번호로 로그인할 수 있어요.
+        </p>
+      )}
+      {children}
+    </>
+  );
 }
