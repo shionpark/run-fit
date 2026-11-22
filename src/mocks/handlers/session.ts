@@ -25,6 +25,9 @@ const localTime = (iso: string) => {
   return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
+const isClosed = (s: { status: string; registerBy: string }) =>
+  s.status === 'CLOSED' || new Date(s.registerBy).getTime() <= Date.now();
+
 export function createSessionHandlers(p: PathFn, authMode: AuthMode) {
   return [
     // 세션 생성
@@ -84,6 +87,13 @@ export function createSessionHandlers(p: PathFn, authMode: AuthMode) {
 
       let filteredSessions = [...sessions];
 
+      const status = url.searchParams.get('status');
+      if (status === 'OPEN' || status === 'CLOSED') {
+        filteredSessions = filteredSessions.filter(
+          (s) => isClosed(s) === (status === 'CLOSED')
+        );
+      }
+
       if (city) {
         filteredSessions = filteredSessions.filter((s) => s.city === city);
       }
@@ -142,11 +152,16 @@ export function createSessionHandlers(p: PathFn, authMode: AuthMode) {
             new Date(a.sessionAt).getTime() - new Date(b.sessionAt).getTime()
         );
       } else if (sort === 'registerByAsc') {
-        // 마감 임박순 (registerBy 오름차순)
-        filteredSessions.sort(
-          (a, b) =>
-            new Date(a.registerBy).getTime() - new Date(b.registerBy).getTime()
-        );
+        // 마감 임박순: 모집 중인 세션을 마감이 가까운 순으로, 마감된 세션은 그 뒤에 최근 마감 순으로
+        const deadline = (x: (typeof filteredSessions)[number]) =>
+          new Date(x.registerBy).getTime();
+        filteredSessions.sort((a, b) => {
+          const aClosed = isClosed(a);
+          if (aClosed !== isClosed(b)) return aClosed ? 1 : -1;
+          return aClosed
+            ? deadline(b) - deadline(a)
+            : deadline(a) - deadline(b);
+        });
       }
 
       // 무한스크롤
