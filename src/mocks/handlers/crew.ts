@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { requireAuth, type AuthMode } from '../core/auth';
 import type { PathFn } from '../core/path';
-import { crews, faker, users } from '../data';
+import { crews, faker, sessions, users } from '../data';
 import { parseIdParam, successResponse } from '../utils';
 
 interface CreateCrewRequest {
@@ -84,11 +84,18 @@ export function createCrewHandlers(p: PathFn, authMode: AuthMode) {
       }
 
       if (sort === 'lastSessionDesc') {
-        // 마지막 세션 날짜 기준 정렬
+        const lastSessionAt = (crewId: number) =>
+          Math.max(
+            0,
+            ...sessions
+              .filter((session) => session.crewId === crewId)
+              .map((session) => new Date(session.sessionAt).getTime())
+          );
+        filteredCrews.sort((a, b) => lastSessionAt(b.id) - lastSessionAt(a.id));
       }
 
       if (sort === 'memberCountDesc') {
-        // 멤버 수 기준 정렬
+        filteredCrews.sort((a, b) => b.memberCount - a.memberCount);
       }
 
       if (sort === 'nameAsc') {

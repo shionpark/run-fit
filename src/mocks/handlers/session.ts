@@ -14,6 +14,17 @@ import {
 } from '../data/demoText';
 import { parseIdParam, successResponse } from '../utils';
 
+// 필터 값은 사용자가 고른 한국 시간이므로 UTC ISO 문자열이 아닌 로컬 날짜·시각으로 비교한다.
+const pad = (n: number) => String(n).padStart(2, '0');
+const localDate = (iso: string) => {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+const localTime = (iso: string) => {
+  const d = new Date(iso);
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
 export function createSessionHandlers(p: PathFn, authMode: AuthMode) {
   return [
     // 세션 생성
@@ -93,28 +104,28 @@ export function createSessionHandlers(p: PathFn, authMode: AuthMode) {
 
       if (dateFrom) {
         filteredSessions = filteredSessions.filter((s) => {
-          const sessionDate = s.sessionAt.split('T')[0];
+          const sessionDate = localDate(s.sessionAt);
           return sessionDate >= dateFrom;
         });
       }
 
       if (dateTo) {
         filteredSessions = filteredSessions.filter((s) => {
-          const sessionDate = s.sessionAt.split('T')[0];
+          const sessionDate = localDate(s.sessionAt);
           return sessionDate <= dateTo;
         });
       }
 
       if (timeFrom) {
         filteredSessions = filteredSessions.filter((s) => {
-          const sessionTime = s.sessionAt.split('T')[1].slice(0, 5); // "HH:MM"
+          const sessionTime = localTime(s.sessionAt); // "HH:MM"
           return sessionTime >= timeFrom;
         });
       }
 
       if (timeTo) {
         filteredSessions = filteredSessions.filter((s) => {
-          const sessionTime = s.sessionAt.split('T')[1].slice(0, 5); // "HH:MM"
+          const sessionTime = localTime(s.sessionAt); // "HH:MM"
           return sessionTime <= timeTo;
         });
       }
